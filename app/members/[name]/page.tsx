@@ -17,9 +17,11 @@ export default function MemberDetailPage({ params }: Props) {
         alt={`${member.name} 프로필`}
         className="w-full h-80 object-cover rounded-lg shadow mb-6"
       />
-      <h1 className="text-3xl font-bold mb-2">{member.name}</h1>
-      <p className="text-lg text-gray-600 mb-4">{member.instrument}</p>
-      <p className="text-gray-800 leading-relaxed whitespace-pre-line">{member.description}</p>
+        <h1 className="text-3xl font-bold mb-2 font-serif">{member.name}</h1>
+        <p className="text-lg text-gray-600 mb-4 font-serif">{member.instrument}</p>
+        <p className="text-gray-800 leading-relaxed whitespace-pre-line font-serif">
+        {member.description}
+        </p>
     </main>
   );
 }
