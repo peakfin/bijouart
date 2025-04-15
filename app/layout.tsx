@@ -31,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`min-h-screen bg-[url('/images/background.png')] bg-cover bg-fixed bg-center text-stone-800 font-serif ${geistSans.variable} ${geistMono.variable} ${notoSerifKr.variable} antialiased`}
+        className={`min-h-screen font-serif text-stone-800 antialiased ${geistSans.variable} ${geistMono.variable} ${notoSerifKr.variable}`}
       >
         {children}
       </body>
