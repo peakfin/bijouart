@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { members as initialMembers } from '@/data/members';
 import type { Member } from '@/data/members';
-import { Pencil, Trash2, X } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 
 export default function AdminMembersPage() {
   const [members, setMembers] = useState<Member[]>(initialMembers);
