@@ -17,6 +17,53 @@ export default function AdminMembersPage() {
 
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
+  // 👉 TypeScript members.ts 문자열 생성 함수
+  const generateMembersTS = (members: Member[]) => {
+    const stringify = (str: string) =>
+      '`' + str.replace(/`/g, '\\`') + '`';
+
+    const entries = members.map((m) => {
+      return `  {
+    name: '${m.name}',
+    instrument: '${m.instrument}',
+    image: '${m.image}',
+    isLeader: ${m.isLeader ?? false},
+    description: ${m.description ? stringify(m.description) : "''"},
+  }`;
+    });
+
+    return `export type Member = {
+  name: string;
+  instrument: string;
+  image: string;
+  isLeader?: boolean;
+  description?: string;
+};
+
+export const members: Member[] = [
+${entries.join(',\n')}
+];`;
+  };
+
+  const syncToServer = async (updatedMembers: Member[]) => {
+    const tsContent = generateMembersTS(updatedMembers);
+
+    try {
+      const res = await fetch('https://bijouart-api.onrender.com/update-members-ts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: tsContent }),
+      });
+
+      if (!res.ok) throw new Error('업데이트 실패');
+      console.log('✅ members.ts 업데이트 완료');
+    } catch (err) {
+      console.error('❌ 서버 연동 실패:', err);
+    }
+  };
+
   useEffect(() => {
     if (editIndex !== null) {
       const member = members[editIndex];
@@ -43,7 +90,7 @@ export default function AdminMembersPage() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!name.trim() || !instrument.trim()) {
       alert('이름과 악기를 입력해주세요.');
       return;
@@ -57,8 +104,10 @@ export default function AdminMembersPage() {
       image: imageFile ? `/images/${name}.jpg` : '/images/placeholder.jpg',
     };
 
+    let updated: Member[] = [];
+
     if (editIndex !== null) {
-      const updated = [...members];
+      updated = [...members];
       updated[editIndex] = newMember;
       setMembers(updated);
     } else {
@@ -66,17 +115,22 @@ export default function AdminMembersPage() {
         alert('이미 동일한 이름의 멤버가 있습니다.');
         return;
       }
-      setMembers([newMember, ...members]);
+      updated = [newMember, ...members];
+      setMembers(updated);
     }
 
-    // 상태 초기화
     setEditIndex(null);
+
+    // 🔁 API로 업데이트된 members.ts 전송
+    await syncToServer(updated);
   };
 
-  const handleDelete = (index: number) => {
+  const handleDelete = async (index: number) => {
     const confirmed = window.confirm(`${members[index].name} 멤버를 삭제할까요?`);
     if (!confirmed) return;
-    setMembers(members.filter((_, i) => i !== index));
+    const updated = members.filter((_, i) => i !== index);
+    setMembers(updated);
+    await syncToServer(updated);
   };
 
   return (
