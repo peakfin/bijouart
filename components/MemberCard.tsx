@@ -12,7 +12,7 @@ type MemberCardProps = {
 export default function MemberCard({ name, instrument, image, isLeader = false }: MemberCardProps) {
   return (
     <Link href={`/members/${encodeURIComponent(name)}`} className="block">
-      <div className="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition border border-stone-100">
+      <div className="bg-white/60 rounded-xl shadow-sm p-4 hover:shadow-md transition border border-stone-100">
         <img
           src={image}
           alt={`${name} 프로필`}
