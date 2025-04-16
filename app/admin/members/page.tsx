@@ -18,17 +18,16 @@ export default function AdminMembersPage() {
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
   const generateMembersTS = (members: Member[]) => {
-    const stringify = (str: string) => '`' + str.replace(/`/g, '\\`') + '`';
+    const escapeBackticks = (str: string) => str.replace(/`/g, '\`');
     const entries = members.map((m) => {
       return `  {
     name: '${m.name}',
     instrument: '${m.instrument}',
     image: '${m.image}',
     isLeader: ${m.isLeader ?? false},
-    description: ${m.description ? stringify(m.description) : "''"},
+    description: \`${escapeBackticks(m.description ?? '')}\`,
   }`;
     });
-
     return `export type Member = {
   name: string;
   instrument: string;
@@ -44,37 +43,35 @@ ${entries.join(',\n')}
 
   const syncToServer = async (updatedMembers: Member[]) => {
     const tsContent = generateMembersTS(updatedMembers);
-
     try {
       const res = await fetch('https://bijouart-api.onrender.com/update-members-ts', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: tsContent }),
       });
-
-      if (!res.ok) throw new Error('업데이트 실패');
-      console.log('✅ members.ts 업데이트 완료');
+      if (!res.ok) throw new Error('TS 업데이트 실패');
     } catch (err) {
-      console.error('❌ 서버 연동 실패:', err);
+      console.error('🔁 TS 서버 전송 실패:', err);
     }
   };
 
-  const uploadImage = async (file: File, memberName: string): Promise<string> => {
+  const uploadImage = async (name: string, file: File): Promise<string> => {
     const formData = new FormData();
     formData.append('image', file);
-    formData.append('filename', memberName);
+    formData.append('name', name);
 
-    const res = await fetch('https://bijouart-api.onrender.com/upload-profile', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!res.ok) throw new Error('이미지 업로드 실패');
-
-    const data = await res.json();
-    return data.imageUrl; // 예: '/images/홍길동.jpg'
+    try {
+      const res = await fetch('https://bijouart-api.onrender.com/upload-image', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) throw new Error('이미지 업로드 실패');
+      const data = await res.json();
+      return data.url;
+    } catch (err) {
+      console.error('🖼 이미지 업로드 실패:', err);
+      return '/images/placeholder.jpg';
+    }
   };
 
   useEffect(() => {
@@ -109,15 +106,9 @@ ${entries.join(',\n')}
       return;
     }
 
-    let imageUrl = '/images/placeholder.jpg';
-
+    let imageUrl = previewUrl ?? '/images/placeholder.jpg';
     if (imageFile) {
-      try {
-        imageUrl = await uploadImage(imageFile, name);
-      } catch (err) {
-        alert('이미지 업로드 실패');
-        return;
-      }
+      imageUrl = await uploadImage(name, imageFile);
     }
 
     const newMember: Member = {
@@ -128,8 +119,7 @@ ${entries.join(',\n')}
       image: imageUrl,
     };
 
-    let updated: Member[] = [];
-
+    let updated: Member[];
     if (editIndex !== null) {
       updated = [...members];
       updated[editIndex] = newMember;
@@ -143,14 +133,13 @@ ${entries.join(',\n')}
       setMembers(updated);
     }
 
-    setEditIndex(null);
     await syncToServer(updated);
+    setEditIndex(null);
   };
 
   const handleDelete = async (index: number) => {
     const confirmed = window.confirm(`${members[index].name} 멤버를 삭제할까요?`);
     if (!confirmed) return;
-
     const updated = members.filter((_, i) => i !== index);
     setMembers(updated);
     await syncToServer(updated);
