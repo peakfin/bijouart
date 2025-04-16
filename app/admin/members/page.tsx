@@ -17,11 +17,8 @@ export default function AdminMembersPage() {
 
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
-  // 👉 TypeScript members.ts 문자열 생성 함수
   const generateMembersTS = (members: Member[]) => {
-    const stringify = (str: string) =>
-      '`' + str.replace(/`/g, '\\`') + '`';
-
+    const stringify = (str: string) => '`' + str.replace(/`/g, '\\`') + '`';
     const entries = members.map((m) => {
       return `  {
     name: '${m.name}',
@@ -64,6 +61,22 @@ ${entries.join(',\n')}
     }
   };
 
+  const uploadImage = async (file: File, memberName: string): Promise<string> => {
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('filename', memberName);
+
+    const res = await fetch('https://bijouart-api.onrender.com/upload-profile', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!res.ok) throw new Error('이미지 업로드 실패');
+
+    const data = await res.json();
+    return data.imageUrl; // 예: '/images/홍길동.jpg'
+  };
+
   useEffect(() => {
     if (editIndex !== null) {
       const member = members[editIndex];
@@ -96,12 +109,23 @@ ${entries.join(',\n')}
       return;
     }
 
+    let imageUrl = '/images/placeholder.jpg';
+
+    if (imageFile) {
+      try {
+        imageUrl = await uploadImage(imageFile, name);
+      } catch (err) {
+        alert('이미지 업로드 실패');
+        return;
+      }
+    }
+
     const newMember: Member = {
       name,
       instrument,
       isLeader,
       description,
-      image: imageFile ? `/images/${name}.jpg` : '/images/placeholder.jpg',
+      image: imageUrl,
     };
 
     let updated: Member[] = [];
@@ -120,14 +144,13 @@ ${entries.join(',\n')}
     }
 
     setEditIndex(null);
-
-    // 🔁 API로 업데이트된 members.ts 전송
     await syncToServer(updated);
   };
 
   const handleDelete = async (index: number) => {
     const confirmed = window.confirm(`${members[index].name} 멤버를 삭제할까요?`);
     if (!confirmed) return;
+
     const updated = members.filter((_, i) => i !== index);
     setMembers(updated);
     await syncToServer(updated);
