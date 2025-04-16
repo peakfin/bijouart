@@ -1,7 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { philosophy, clients } from '@/data/data';
+// import { motion } from 'framer-motion';
+// import { philosophy, clients } from '@/data/data';
 
 export default function HomePage() {
   return (
