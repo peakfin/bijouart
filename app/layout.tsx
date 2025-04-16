@@ -17,6 +17,7 @@ const geistMono = Geist_Mono({
 const notoSerifKr = Noto_Serif_KR({
   variable: '--font-noto-serif-kr',
   weight: ['400', '600', '700'],
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
