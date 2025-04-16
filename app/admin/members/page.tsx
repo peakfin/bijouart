@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { members as initialMembers } from '@/data/members';
 import type { Member } from '@/data/members';
-import EditMemberModal from '@/components/EditMemberModal';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, X } from 'lucide-react';
 
 export default function AdminMembersPage() {
   const [members, setMembers] = useState<Member[]>(initialMembers);
@@ -13,54 +12,81 @@ export default function AdminMembersPage() {
   const [instrument, setInstrument] = useState('');
   const [isLeader, setIsLeader] = useState(false);
   const [description, setDescription] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const [editTarget, setEditTarget] = useState<Member | null>(null);
+  const [editIndex, setEditIndex] = useState<number | null>(null);
 
-  const handleAdd = () => {
-    if (!name || !instrument) {
-      alert('이름과 악기를 입력해주세요.');
-      return;
+  useEffect(() => {
+    if (editIndex !== null) {
+      const member = members[editIndex];
+      setName(member.name);
+      setInstrument(member.instrument);
+      setIsLeader(member.isLeader ?? false);
+      setDescription(member.description ?? '');
+      setPreviewUrl(member.image);
+    } else {
+      setName('');
+      setInstrument('');
+      setIsLeader(false);
+      setDescription('');
+      setImageFile(null);
+      setPreviewUrl(null);
     }
+  }, [editIndex]);
 
-    if (members.some((m) => m.name === name)) {
-      alert('이미 동일한 이름의 멤버가 있습니다.');
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSubmit = () => {
+    if (!name.trim() || !instrument.trim()) {
+      alert('이름과 악기를 입력해주세요.');
       return;
     }
 
     const newMember: Member = {
       name,
       instrument,
-      image: '/images/placeholder.jpg',
       isLeader,
       description,
+      image: imageFile ? `/images/${name}.jpg` : '/images/placeholder.jpg',
     };
 
-    setMembers([newMember, ...members]);
-    setName('');
-    setInstrument('');
-    setIsLeader(false);
-    setDescription('');
+    if (editIndex !== null) {
+      const updated = [...members];
+      updated[editIndex] = newMember;
+      setMembers(updated);
+    } else {
+      if (members.some((m) => m.name === name)) {
+        alert('이미 동일한 이름의 멤버가 있습니다.');
+        return;
+      }
+      setMembers([newMember, ...members]);
+    }
+
+    // 상태 초기화
+    setEditIndex(null);
   };
 
-  const handleDelete = (name: string) => {
-    const confirmed = window.confirm(`${name} 멤버를 삭제할까요?`);
+  const handleDelete = (index: number) => {
+    const confirmed = window.confirm(`${members[index].name} 멤버를 삭제할까요?`);
     if (!confirmed) return;
-    setMembers(members.filter((m) => m.name !== name));
-  };
-
-  const handleSave = (updated: Member) => {
-    setMembers((prev) =>
-      prev.map((m) => (m.name === updated.name ? updated : m))
-    );
+    setMembers(members.filter((_, i) => i !== index));
   };
 
   return (
     <div>
       <h2 className="text-2xl font-semibold mb-6">🎻 멤버 관리</h2>
 
-      {/* 멤버 추가 */}
       <div className="mb-10 border p-4 rounded-lg bg-white shadow-sm">
-        <h3 className="text-lg font-medium mb-4">새 멤버 추가</h3>
+        <h3 className="text-lg font-medium mb-4">
+          {editIndex !== null ? '멤버 수정' : '새 멤버 추가'}
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
             type="text"
@@ -90,16 +116,43 @@ export default function AdminMembersPage() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
-          <button
-            onClick={handleAdd}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded md:col-span-2 w-full"
-          >
-            추가
-          </button>
+          <div className="md:col-span-2">
+            <label className="block mb-1 text-sm font-medium text-gray-700">
+              프로필 사진 업로드
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="text-sm"
+            />
+            {previewUrl && (
+              <img
+                src={previewUrl}
+                alt="미리보기"
+                className="mt-4 w-32 h-32 object-cover rounded border"
+              />
+            )}
+          </div>
+          <div className="md:col-span-2 flex justify-end gap-4">
+            {editIndex !== null && (
+              <button
+                onClick={() => setEditIndex(null)}
+                className="text-gray-600 hover:text-gray-800"
+              >
+                취소
+              </button>
+            )}
+            <button
+              onClick={handleSubmit}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+            >
+              {editIndex !== null ? '저장' : '추가'}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* 멤버 목록 */}
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm text-left">
           <thead className="bg-gray-100 border-b">
@@ -111,7 +164,7 @@ export default function AdminMembersPage() {
             </tr>
           </thead>
           <tbody>
-            {members.map((member) => (
+            {members.map((member, i) => (
               <tr key={member.name} className="border-b hover:bg-gray-50">
                 <td className="px-4 py-2">{member.name}</td>
                 <td className="px-4 py-2">{member.instrument}</td>
@@ -124,18 +177,16 @@ export default function AdminMembersPage() {
                 </td>
                 <td className="px-4 py-2 flex gap-2">
                   <button
-                    onClick={() => setEditTarget(member)}
+                    onClick={() => setEditIndex(i)}
                     className="text-blue-600 hover:text-blue-800"
                   >
-                    <Pencil className="w-4 h-4 inline-block mr-1" />
-                    수정
+                    <Pencil className="w-4 h-4 inline-block mr-1" /> 수정
                   </button>
                   <button
-                    onClick={() => handleDelete(member.name)}
+                    onClick={() => handleDelete(i)}
                     className="text-red-600 hover:text-red-800"
                   >
-                    <Trash2 className="w-4 h-4 inline-block mr-1" />
-                    삭제
+                    <Trash2 className="w-4 h-4 inline-block mr-1" /> 삭제
                   </button>
                 </td>
               </tr>
@@ -143,14 +194,6 @@ export default function AdminMembersPage() {
           </tbody>
         </table>
       </div>
-
-      {editTarget && (
-        <EditMemberModal
-          member={editTarget}
-          onSave={handleSave}
-          onClose={() => setEditTarget(null)}
-        />
-      )}
     </div>
   );
 }

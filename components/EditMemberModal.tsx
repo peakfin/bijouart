@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import type { Member } from '@/data/members';
-import ModalPortal from './ModalPortal';
+import ModalPortal from '@/components/ModalPortal';
 
 type Props = {
   member: Member;
-  onSave: (updated: Member) => void;
+  onSave: (updated: Member, newImage?: File | null) => void;
   onClose: () => void;
 };
 
@@ -15,12 +15,15 @@ export default function EditMemberModal({ member, onSave, onClose }: Props) {
   const [instrument, setInstrument] = useState(member.instrument);
   const [isLeader, setIsLeader] = useState(member.isLeader ?? false);
   const [description, setDescription] = useState(member.description ?? '');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     setName(member.name);
     setInstrument(member.instrument);
     setIsLeader(member.isLeader ?? false);
     setDescription(member.description ?? '');
+    setPreviewUrl(member.image); // 기존 이미지 미리보기
   }, [member]);
 
   const handleSubmit = () => {
@@ -29,15 +32,29 @@ export default function EditMemberModal({ member, onSave, onClose }: Props) {
       return;
     }
 
-    onSave({
-      ...member,
-      name,
-      instrument,
-      isLeader,
-      description,
-    });
+    // ✅ 이 부분에서 imageFile은 나중에 서버로 업로드되어야 함
+    onSave(
+      {
+        ...member,
+        name,
+        instrument,
+        isLeader,
+        description,
+        // 이미지 경로는 서버 업로드 후 반영 필요
+        image: imageFile ? `/images/${name}.jpg` : member.image,
+      },
+      imageFile
+    );
 
     onClose();
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
   };
 
   return (
@@ -78,6 +95,25 @@ export default function EditMemberModal({ member, onSave, onClose }: Props) {
                 />
                 리더 여부
               </label>
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  프로필 사진 업로드
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="text-sm"
+                />
+                {previewUrl && (
+                  <img
+                    src={previewUrl}
+                    alt="미리보기"
+                    className="w-32 h-32 mt-4 object-cover rounded border"
+                  />
+                )}
+              </div>
             </div>
 
             {/* 우측 소개글 */}
