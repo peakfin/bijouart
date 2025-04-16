@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { Crown } from 'lucide-react';
 import { Award } from 'lucide-react'; // 또는 ShieldCheck, Star 등
 
 type MemberCardProps = {
