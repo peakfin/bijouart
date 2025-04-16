@@ -16,13 +16,15 @@ export default function TopBar() {
 
   return (
     <header className="w-full px-6 py-4 border-b border-stone-200 bg-white/80 backdrop-blur-md fixed top-0 z-50">
-      <nav className="max-w-6xl mx-auto flex items-center justify-between">
-      <Link href="/" className="flex items-center gap-2">
-        <img src="/images/bijouart-logo-ori.png" alt="Bijouart Logo" className="w-8 h-8" />
-        <span className="text-xl font-semibold font-serif text-stone-800">Bijouart</span>
-      </Link>
+      <nav className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+        {/* 로고 + 텍스트 */}
+        <Link href="/" className="flex items-center gap-2 shrink-0">
+          <img src="/images/bijouart-logo-ori.png" alt="Bijouart Logo" className="w-8 h-8" />
+          <span className="text-xl font-semibold font-serif text-stone-800">Bijouart</span>
+        </Link>
 
-        <div className="flex gap-4 text-sm text-stone-600">
+        {/* 네비게이션 메뉴 */}
+        <div className="flex flex-wrap gap-3 sm:gap-4 text-sm text-stone-600 justify-start sm:justify-end">
           {navItems.map(({ href, label }) => {
             const isActive = pathname === href;
             return (
