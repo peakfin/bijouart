@@ -46,7 +46,7 @@ ${entries.join(',\n')}
         body: JSON.stringify({ content: tsContent }),
       });
       if (!res.ok) throw new Error('API 실패');
-      console.log('✅ schedules.ts 커밋 완료');
+      console.log('✅ schedule-datas.ts 커밋 완료');
     } catch (err) {
       console.error('❌ 스케줄 API 연동 실패:', err);
     }
