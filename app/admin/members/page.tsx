@@ -18,7 +18,7 @@ export default function AdminMembersPage() {
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
   const generateMembersTS = (members: Member[]) => {
-    const escapeBackticks = (str: string) => str.replace(/`/g, '\`');
+    const escapeBackticks = (str: string) => str.replace(/`/g, '\\`');
     const entries = members.map((m) => {
       return `  {
     name: '${m.name}',
@@ -57,8 +57,8 @@ ${entries.join(',\n')}
 
   const uploadImage = async (name: string, file: File): Promise<string> => {
     const formData = new FormData();
-    formData.append('image', file);
-    formData.append('name', name);
+    formData.append('file', file); // 🔧 서버에 맞게 'file'로 지정
+    formData.append('filename', name); // 🔧 서버에 맞게 'filename'으로 지정
 
     try {
       const res = await fetch('https://bijouart-api.onrender.com/upload-image', {
