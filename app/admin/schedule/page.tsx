@@ -7,17 +7,52 @@ import { Pencil, Trash2 } from 'lucide-react';
 
 export default function AdminSchedulePage() {
   const [schedules, setSchedules] = useState<Schedule[]>(initialSchedules);
-
   const [form, setForm] = useState({
     title: '',
     date: '',
     location: '',
     isUpcoming: true,
   });
-
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
-  const handleAdd = () => {
+  const generateSchedulesTS = (schedules: Schedule[]) => {
+    const entries = schedules.map((s) => {
+      return `  {
+    title: '${s.title}',
+    date: '${s.date}',
+    location: '${s.location}',
+    isUpcoming: ${s.isUpcoming ?? true},
+  }`;
+    });
+
+    return `export type Schedule = {
+  title: string;
+  date: string;
+  location: string;
+  isUpcoming?: boolean;
+};
+
+export const schedules: Schedule[] = [
+${entries.join(',\n')}
+];`;
+  };
+
+  const syncToServer = async (updated: Schedule[]) => {
+    const tsContent = generateSchedulesTS(updated);
+    try {
+      const res = await fetch('https://bijouart-api.onrender.com/update-schedules-ts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: tsContent }),
+      });
+      if (!res.ok) throw new Error('API 실패');
+      console.log('✅ schedules.ts 커밋 완료');
+    } catch (err) {
+      console.error('❌ 스케줄 API 연동 실패:', err);
+    }
+  };
+
+  const handleAdd = async () => {
     if (!form.title || !form.date || !form.location) {
       alert('모든 항목을 입력해주세요.');
       return;
@@ -30,28 +65,25 @@ export default function AdminSchedulePage() {
       isUpcoming: form.isUpcoming,
     };
 
+    let updated: Schedule[] = [];
     if (editIndex !== null) {
-      const updated = [...schedules];
+      updated = [...schedules];
       updated[editIndex] = newSchedule;
-      setSchedules(updated);
       setEditIndex(null);
     } else {
-      setSchedules([newSchedule, ...schedules]);
+      updated = [newSchedule, ...schedules];
     }
 
-    // TODO: API or Git commit로 추가/수정 반영 필요
-
+    setSchedules(updated);
+    await syncToServer(updated);
     setForm({ title: '', date: '', location: '', isUpcoming: true });
   };
 
-  const handleDelete = (index: number) => {
-    if (confirm('정말 삭제하시겠습니까?')) {
-      const updated = [...schedules];
-      updated.splice(index, 1);
-      setSchedules(updated);
-
-      // TODO: API or Git commit로 삭제 반영 필요
-    }
+  const handleDelete = async (index: number) => {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
+    const updated = schedules.filter((_, i) => i !== index);
+    setSchedules(updated);
+    await syncToServer(updated);
   };
 
   const handleEdit = (index: number) => {
@@ -69,7 +101,6 @@ export default function AdminSchedulePage() {
     <div>
       <h2 className="text-2xl font-semibold mb-6">🗓️ 공연일정 관리</h2>
 
-      {/* 추가 폼 */}
       <div className="mb-10 bg-white p-6 rounded-lg shadow-sm border">
         <h3 className="text-lg font-medium mb-4">
           {editIndex !== null ? '공연 수정' : '새 공연 추가'}
@@ -100,9 +131,7 @@ export default function AdminSchedulePage() {
             <input
               type="checkbox"
               checked={form.isUpcoming}
-              onChange={(e) =>
-                setForm({ ...form, isUpcoming: e.target.checked })
-              }
+              onChange={(e) => setForm({ ...form, isUpcoming: e.target.checked })}
             />
             다가오는 공연 여부
           </label>
@@ -128,7 +157,6 @@ export default function AdminSchedulePage() {
         </div>
       </div>
 
-      {/* 일정 목록 */}
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm text-left border border-gray-200">
           <thead className="bg-gray-100">
