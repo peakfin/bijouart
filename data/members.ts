@@ -1,19 +1,18 @@
 export type Member = {
-    name: string;
-    instrument: string;
-    image: string;
-    isLeader?: boolean;
-    description?: string;
-  };
-  
-  export const members: Member[] = [
-    {
-      name: '박윤일',
-      instrument: '클라리넷',
-      image: '/images/박윤일.jpg',
-      isLeader: true,
-      description: `
-        숭실대학교 음악원 학사 졸업
+  name: string;
+  instrument: string;
+  image: string;
+  isLeader?: boolean;
+  description?: string;
+};
+
+export const members: Member[] = [
+  {
+    name: '박윤일',
+    instrument: '클라리넷',
+    image: '/images/박윤일.jpg',
+    isLeader: true,
+    description: `숭실대학교 음악원 학사 졸업
         국민대학교 음악대학원 석사 졸업
         이탈리아 Civica scuola delle arti di Roma 최고연주자과정 졸업
         (오케스트라 지휘)
@@ -26,14 +25,14 @@ export type Member = {
         한국음악협회 안양지부 홍보부장
         숭실대학교 교직원, 인천예술고등학교 강사 역임
 
-        현) 신한대학교 클라리넷 강의 전담 교수`.trim(),
-    },
-    {
-      name: '이미연',
-      instrument: '플루트',
-      image: '/images/이미연.jpg',
-      description: `
-        전주예술고등학교 졸업
+        현) 신한대학교 클라리넷 강의 전담 교수테스트`,
+  },
+  {
+    name: '이미연',
+    instrument: '플루트',
+    image: '/images/이미연.jpg',
+    isLeader: false,
+    description: `전주예술고등학교 졸업
         숭실대학교 음악원 학사 졸업
         숙명여자대학교 대학원 석사 졸업
     
@@ -52,15 +51,14 @@ export type Member = {
         예술의 전당, 롯데콘서트홀, 삼성인재개발원, 인천예술문화회관 등 다수 솔로 연주 및 앙상블 연주
 
         현) 아이올라 플루트앙상블, 사랑의플루트콰이어 단원,
-            이루다 플루트 음악교습소 원장
-`.trim(),
-    },
-    {
-      name: '최지우',
-      instrument: '오보에',
-      image: '/images/최지우.jpg',
-      description: `
-        숭실대학교 음악원 학사 졸업
+            이루다 플루트 음악교습소 원장`,
+  },
+  {
+    name: '최지우',
+    instrument: '오보에',
+    image: '/images/최지우.jpg',
+    isLeader: false,
+    description: `숭실대학교 음악원 학사 졸업
         
         한국음악대학 관악협회 콩쿨 1위 없는 2위
         제 30회 음악저널 콩쿨 입상
@@ -78,14 +76,14 @@ export type Member = {
         노원문화재단 전문예술인
         2023 서울 구석구석 라이브 아티스트
 
-        현) 웨스턴심포니 오케스트라 단원, 앙상블 크루 Cielo 대표`.trim(),
-    },
-    {
-      name: '한준혁',
-      instrument: '클라리넷',
-      image: '/images/한준혁.jpg',
-      description: `
-        선화예술고등학교 졸업
+        현) 웨스턴심포니 오케스트라 단원, 앙상블 크루 Cielo 대표`,
+  },
+  {
+    name: '한준혁',
+    instrument: '클라리넷',
+    image: '/images/한준혁.jpg',
+    isLeader: false,
+    description: `선화예술고등학교 졸업
 
         전국음악대학 관악협회 주최 관악콩쿠르 1등
         경기예술고등학교 콩쿠르 1등
@@ -95,6 +93,6 @@ export type Member = {
         선화예술고등학교 실내악 콩쿠르 2등
         부산음악콩쿠르 입상
 
-        현) 한국예술종합학교 예술사 재학 중`.trim(),
-    },
-  ];
+        현) 한국예술종합학교 예술사 재학 중`,
+  }
+];
