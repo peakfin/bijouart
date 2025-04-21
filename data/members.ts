@@ -8,6 +8,13 @@ export type Member = {
 
 export const members: Member[] = [
   {
+    name: '테스트1',
+    instrument: '테스트2',
+    image: '/images/테스트1.png',
+    isLeader: false,
+    description: `테스트3`,
+  },
+  {
     name: '박윤일',
     instrument: '클라리넷',
     image: '/images/박윤일.jpg',
